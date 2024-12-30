@@ -36,8 +36,7 @@ func (qr *QuantumRegister) measure(observation float64) []int {
         return nil
     }
     result := jointState.measure(observation)
-    // Decode the joint measurement result into individual qudit states
-    numQudits := len(qr.Qudits)
+    numQudits := len(qr.Qudits) // Decode the joint measurement result into individual qudit states
     results := make([]int, numQudits)
     base := len(qr.Qudits[0].Amplitudes)
     for i := numQudits - 1; i >= 0; i-- {
@@ -45,4 +44,11 @@ func (qr *QuantumRegister) measure(observation float64) []int {
         result /= base
     }
     return results
+}
+
+func (qr *QuantumRegister) applyGateToQudit(index int, gate [][]complex128) error {
+    if index < 0 || index >= len(qr.Qudits) {
+        return fmt.Errorf("src/register.go : applyGateToQudit() :: ERROR ::: Index out of range.")
+    }
+    return qr.Qudits[index].applyGate(gate)
 }

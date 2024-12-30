@@ -33,3 +33,25 @@ func (qd *Qudit) measure(observation float64) int {
     }
     return len(qd.Amplitudes) - 1 
 }
+
+func (qd *Qudit) applyGate(gate [][]complex128) error {
+    if qd == nil {
+        return fmt.Errorf("src/qudit.go : applyGate() :: ERROR ::: Qudit is nil, cannot apply gate.")
+    }
+    if len(gate) != qd.Dimension {
+        return fmt.Errorf("src/qudit.go : applyGate() :: ERROR ::: Gate dimension (%d) does not match qudit dimension (%d).", len(gate), qd.Dimension)
+    }
+    for i := range gate {
+        if len(gate[i]) != qd.Dimension {
+            return fmt.Errorf("src/register.go : applyGate() :: ERROR ::: Gate is not square.")
+        }
+    }
+    newAmplitudes := make([]complex128, qd.Dimension)
+    for i := 0; i < qd.Dimension; i++ {
+        for j := 0; j < qd.Dimension; j++ {
+            newAmplitudes[i] += gate[i][j] * qd.Amplitudes[j]
+        }
+    }
+    qd.Amplitudes = newAmplitudes
+    return nil
+}
