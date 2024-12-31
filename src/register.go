@@ -52,7 +52,7 @@ func (qr *QuantumRegister) applyGateToQudit(index int, gate [][]complex128) erro
     }
     return qr.Qudits[index].applyGate(gate)
 }
-
+// TODO: Test this function with cNot or cZ gates
 func (qr *QuantumRegister) applyGateToQudits(gate [][]complex128, controlIndex, targetIndex int) error {
     if controlIndex < 0 || controlIndex >= len(qr.Qudits) || targetIndex < 0 || targetIndex >= len(qr.Qudits) {
         return fmt.Errorf("src/register.go : applyGateToQudits() :: ERROR ::: Invalid qudit indices.")
