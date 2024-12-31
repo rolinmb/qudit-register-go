@@ -52,3 +52,45 @@ func (qr *QuantumRegister) applyGateToQudit(index int, gate [][]complex128) erro
     }
     return qr.Qudits[index].applyGate(gate)
 }
+
+func (qr *QuantumRegister) applyGateToQudits(gate [][]complex128, controlIndex, targetIndex int) error {
+    if controlIndex < 0 || controlIndex >= len(register) || targetIndex < 0 || targetIndex >= len(register) {
+        return fmt.Errorf("src/register.go : applyGateToQudits() :: ERROR ::: Invalid qudit indices.")
+    }
+    if controlIndex == targetIndex {
+        return fmt.Errorf("src/register.go : applyGateToQudits() :: ERROR ::: Control and target indices cannot be the same.")
+    }
+    // Get dimensions of the two qudits
+    controlDim := qr.Qudits[controlIndex].Dimension
+    targetDim := qr.Qudits[targetIndex].Dimension
+    // Check gate dimensions
+    if len(gate) != controlDim*targetDim || len(gate[0]) != controlDim*targetDim {
+        return fmt.Errorf("src/qudit.go : applyGateToQudits() :: ERROR ::: Gate dimensions do not match control-target qudit dimensions.")
+    }
+    // Calculate the new state for the combined register
+    totalDim := controlDim * targetDim
+    newAmplitudes := make([]complex128, totalDim)
+    combinedAmplitudes := make([]complex128, totalDim)
+    // Combine the amplitudes of the control and target qudits
+    for c := 0; c < controlDim; c++ {
+        for t := 0; t < targetDim; t++ {
+            index := c*targetDim + t
+            combinedAmplitudes[index] = qr.Qudits[controlIndex].Amplitudes[c] * qr.Qudits[targetIndex].Amplitudes[t]
+        }
+    }
+    // Apply the gate
+    for i := 0; i < totalDim; i++ {
+        for j := 0; j < totalDim; j++ {
+            newAmplitudes[i] += gate[i][j] * combinedAmplitudes[j]
+        }
+    }
+    // Update the states of the control and target qudits
+    for c := 0; c < controlDim; c++ {
+        for t := 0; t < targetDim; t++ {
+            index := c*targetDim + t
+            qr.Qudits[controlIndex].Amplitudes[c] = newAmplitudes[index]
+            qr.Qudits[targetIndex].Amplitudes[t] = newAmplitudes[index]
+        }
+    }
+    return nil
+}
